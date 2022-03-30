@@ -1,0 +1,28 @@
+{
+  "root": "apps/challenge-e2e",
+  "sourceRoot": "apps/challenge-e2e/src",
+  "projectType": "application",
+  "targets": {
+    "e2e": {
+      "executor": "@nrwl/cypress:cypress",
+      "options": {
+        "cypressConfig": "apps/challenge-e2e/cypress.json",
+        "devServerTarget": "challenge:serve:development"
+      },
+      "configurations": {
+        "production": {
+          "devServerTarget": "challenge:serve:production"
+        }
+      }
+    },
+    "lint": {
+      "executor": "@nrwl/linter:eslint",
+      "outputs": ["{options.outputFile}"],
+      "options": {
+        "lintFilePatterns": ["apps/challenge-e2e/**/*.{js,ts}"]
+      }
+    }
+  },
+  "tags": [],
+  "implicitDependencies": ["challenge"]
+}

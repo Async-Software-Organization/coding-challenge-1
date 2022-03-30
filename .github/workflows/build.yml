@@ -1,0 +1,57 @@
+name: Coding Challenge - ChartJS (Build)
+
+on:
+  push:
+    branches:
+    - release/*
+    - feature/*
+    - bugfix/*
+  pull_request:
+    branches:
+    - main
+
+jobs:
+  build:
+    name: Build and Validate
+    runs-on: ubuntu-latest
+    env:
+      NX_BRANCH: ${{ github.event.number }}
+      NX_RUN_GROUP: ${{ github.run_id }}
+
+    strategy:
+      matrix:
+        node-version: [16.x]
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v1
+      with:
+        node-version: ${{ matrix.node-version }}
+
+    - name: Install Dependencies
+      run: npm ci
+
+    - name: Run Trivy vulnerability scanner in repo mode
+      uses: aquasecurity/trivy-action@master
+      with:
+        scan-type: 'fs'
+        ignore-unfixed: true
+        format: 'sarif'
+        output: 'trivy-results.sarif'
+        severity: 'CRITICAL'
+
+    - name: Cat Trivy scan results
+      run: cat trivy-results.sarif
+
+    - name: Check Linting
+      run: npx nx lint
+
+    - name: Unit Tests
+      run: npm run affected:test:branch
+
+    - name: Build
+      run: npm run affected:build:branch
